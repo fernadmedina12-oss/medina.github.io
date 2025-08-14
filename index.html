@@ -635,29 +635,36 @@
             <div class="player-section">
                 <h2 class="section-title">🔴 Transmisión en Vivo</h2>
                 <div class="live-player">
-<input type="hidden" id="streamUrl" value="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849">
-<audio id="lfmPlayer" controls autoplay style="width:100%; margin-top:15px;">
-  <source src="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849" type="audio/mpeg">
-  Tu navegador no soporta la reproducción de audio.
-</audio>
+    <input type="hidden" id="streamUrl" value="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849">
+    
+    <audio id="lfmPlayer" style="width:100%; margin-top:15px;">
+        <source src="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849" type="audio/mpeg">
+        Tu navegador no soporta la reproducción de audio.
+    </audio>
 
-                    <div class="live-status">
-                        <div class="live-dot"></div>
-                        EN VIVO
-                    </div>
-                    
-                    <div class="volume-control">
-                        <span>🔊</span>
-                        <input type="range" class="volume-slider" id="liveVolume" min="0" max="100" value="50" onchange="setLiveVolume(this.value)">
-                    </div>
-                    <div class="equalizer" id="liveEqualizer" style="display: none;">
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                        <div class="eq-bar"></div>
-                    </div>
+    <div style="margin-top: 15px;">
+        <button class="btn" onclick="playLiveStream()">▶ Reproducir</button>
+        <button class="btn btn-secondary" onclick="stopLiveStream()">⏸ Pausar</button>
+    </div>
+
+    <div class="live-status">
+        <div class="live-dot"></div>
+        EN VIVO
+    </div>
+    
+    <div class="volume-control">
+        <span>🔊</span>
+        <input type="range" class="volume-slider" id="liveVolume" min="0" max="100" value="50" onchange="setLiveVolume(this.value)">
+    </div>
+    <div class="equalizer" id="liveEqualizer" style="display: none;">
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+    </div>
+</div>
                 </div>
             </div>
 
@@ -904,40 +911,7 @@
         }
 
         // Funciones para stream en vivo
-        function playLiveStream() {
-            const audioElement = document.getElementById('lfmPlayer');
-            if (!audioElement) return;
-            audioElement.play().then(() => {
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(err => {
-                console.error('Error al reproducir:', err);
-                alert('No se pudo reproducir el stream');
-            });
-        }
-
-            stopLocalPlayback();
-
-            if (liveAudio) {
-                liveAudio.pause();
-            }
-
-            liveAudio = new Audio(streamUrl);
-            liveAudio.volume = document.getElementById('liveVolume').value / 100;
-            
-            liveAudio.play().then(() => {
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(error => {
-                alert('Error al reproducir el stream. Verifica la URL.');
-                console.error('Error:', error);
-            });
-        }
-
-        function stopLiveStream() {
-            const audioElement = document.getElementById('lfmPlayer');
-            if (!audioElement) return;
-            audioElement.pause();
-            document.getElementById('liveEqualizer').style.display = 'none';
-        }
+        
         }
 
         function setLiveVolume(value) {
@@ -947,36 +921,7 @@
         }
 
         // Funciones para stream en vivo
-        function playLiveStream() {
-            const streamUrl = document.getElementById('streamUrl').value;
-            if (!streamUrl) {
-                alert('Por favor ingresa una URL de stream válida');
-                return;
-            }
-
-            if (liveAudio) {
-                liveAudio.pause();
-            }
-
-            liveAudio = new Audio(streamUrl);
-            liveAudio.volume = document.getElementById('liveVolume').value / 100;
-            
-            liveAudio.play().then(() => {
-                document.getElementById('currentTrackDisplay').textContent = '🔴 Transmisión en Vivo';
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(error => {
-                alert('Error al reproducir el stream. Verifica la URL.');
-                console.error('Error:', error);
-            });
-        }
-
-        function stopLiveStream() {
-            if (liveAudio) {
-                liveAudio.pause();
-                liveAudio = null;
-                document.getElementById('liveEqualizer').style.display = 'none';
-                document.getElementById('currentTrackDisplay').textContent = 'Stream detenido';
-            }
+        
         }
 
         function setLiveVolume(value) {
@@ -1056,6 +1001,34 @@ window.sendMessage = function () {
   push(chatRef, { usuario, texto, timestamp: Date.now() });
   elInput.value = "";
 };
+</script>
+
+
+<script>
+    const audioElement = document.getElementById('lfmPlayer');
+    const equalizer = document.getElementById('liveEqualizer');
+
+    function playLiveStream() {
+        const streamUrl = document.getElementById('streamUrl').value;
+        audioElement.src = streamUrl;
+        audioElement.play()
+            .then(() => {
+                equalizer.style.display = 'flex';
+            })
+            .catch(err => {
+                console.error('Error al reproducir:', err);
+                alert('Debes dar clic para permitir la reproducción.');
+            });
+    }
+
+    function stopLiveStream() {
+        audioElement.pause();
+        equalizer.style.display = 'none';
+    }
+
+    function setLiveVolume(value) {
+        audioElement.volume = value / 100;
+    }
 </script>
 
 </body>
