@@ -270,6 +270,12 @@
             margin-top: 5px;
         }
 
+        .message-user {
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-right: 5px;
+        }
+
         .chat-input-container {
             display: flex;
             gap: 10px;
@@ -636,19 +642,17 @@
                 <h2 class="section-title">🔴 Transmisión en Vivo</h2>
                 <div class="live-player">
 
-<div data-type="newStreamPlayer" 
-     data-publicToken="c4f3db49-2a69-4570-9e6a-2f5f6eb49296" 
-     data-theme="light" 
-     data-color="e81e4d" 
-     data-channelId="9fa20f89-a0a4-4bac-b0f8-85a268742434" 
-     data-rendered="false" 
-     class="cstrEmbed">
-  <a href="https://www.caster.fm">Shoutcast Hosting</a>
-  <a href="https://www.caster.fm">Stream Hosting</a>
-  <a href="https://www.caster.fm">Radio Server Hosting</a>
-</div>
-<script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
-
+                    <div data-type="newStreamPlayer" 
+                         data-publicToken="c4f3db49-2a69-4570-9e6a-2f5f6eb49296" 
+                         data-theme="light" 
+                         data-color="e81e4d" 
+                         data-channelId="9fa20f89-a0a4-4bac-b0f8-85a268742434" 
+                         data-rendered="false" 
+                         class="cstrEmbed">
+                      <a href="https://www.caster.fm">Shoutcast Hosting</a>
+                      <a href="https://www.caster.fm">Stream Hosting</a>
+                      <a href="https://www.caster.fm">Radio Server Hosting</a>
+                    </div>
 
                     <div class="live-status">
                         <div class="live-dot"></div>
@@ -710,81 +714,29 @@
         </div>
     </div>
 
+    <!-- Script de Caster.fm -->
+    <script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
+
+    <!-- Script principal -->
     <script>
         let liveAudio = null;
-        let database = null;
 
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDHxvxILBO9zY42EcIDcBSTTTGkGXqK61k",
-            authDomain: "lfm-radio-750cb.firebaseapp.com",
-            databaseURL: "https://lfm-radio-750cb-default-rtdb.firebaseio.com",
-            projectId: "lfm-radio-750cb",
-            storageBucket: "lfm-radio-750cb.firebasestorage.app",
-            messagingSenderId: "476508090552",
-            appId: "1:476508090552:web:c5b343123ea472fcdf444d",
-            measurementId: "G-XM288R8CDD"
-        };
-
-        // Inicializar Firebase
-        try {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            console.log('🔥 Firebase conectado correctamente a LFM Radio');
-            console.log('Database URL:', firebaseConfig.databaseURL);
-        } catch (error) {
-            console.error('Error conectando Firebase:', error);
-            console.log('Usando chat local como respaldo');
-        }
-
-        // Función para reproducir LFM Radio directamente
-        function playLFMRadio() {
-            // Poner la URL de LFM Radio en el campo
-            
-            // Reproducir automáticamente
-            playLiveStream();
-        }
-
-        // Función para abrir WhatsApp con dedicatoria
-        
-    // Función para abrir WhatsApp directo sin mensaje
-    function openWhatsAppDedication() {
-        const phoneNumber = "573218384587"; // Número con código de país
-        const whatsappUrl = `https://wa.me/${phoneNumber}`;
-        
-        // Abrir en nueva pestaña
-        window.open(whatsappUrl, '_blank');
-    }
-?text=${encodeURIComponent(message)}`;
+        // Función para abrir WhatsApp directo sin mensaje
+        function openWhatsAppDedication() {
+            const phoneNumber = "573218384587"; // Número con código de país
+            const whatsappUrl = `https://wa.me/${phoneNumber}`;
             
             // Abrir en nueva pestaña
             window.open(whatsappUrl, '_blank');
         }
 
-        // Funciones del chat con Firebase
-        function initializeChat() {
-            if (!database) {
-                console.log('Usando chat local');
-                return;
-            }
-
-            // Escuchar mensajes en tiempo real
-            const messagesRef = database.ref('messages');
-            messagesRef.limitToLast(50).on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                displayMessageFromFirebase(message);
-            });
-
-            // Limpiar mensajes antiguos (más de 100)
-            messagesRef.on('value', (snapshot) => {
-                const messages = snapshot.val();
-                if (messages && Object.keys(messages).length > 100) {
-                    const oldestKey = Object.keys(messages)[0];
-                    messagesRef.child(oldestKey).remove();
-                }
-            });
+        // Función para reproducir LFM Radio directamente
+        function playLFMRadio() {
+            // Reproducir automáticamente
+            playLiveStream();
         }
 
+        // Funciones del chat
         function sendMessage() {
             const messageInput = document.getElementById('chatInput');
             const userName = document.getElementById('userName').value || 'Anónimo';
@@ -795,24 +747,10 @@
             const message = {
                 author: userName,
                 content: messageText,
-                timestamp: Date.now(),
                 time: new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})
             };
 
-            if (database) {
-                // Enviar a Firebase
-                database.ref('messages').push(message).then(() => {
-                    console.log('Mensaje enviado a Firebase');
-                }).catch((error) => {
-                    console.error('Error enviando mensaje:', error);
-                    // Fallback a chat local
-                    displayMessageFromFirebase(message);
-                });
-            } else {
-                // Fallback local
-                displayMessageFromFirebase(message);
-            }
-
+            displayMessage(message);
             messageInput.value = '';
             
             // Auto-scroll al final
@@ -822,23 +760,8 @@
             }, 100);
         }
 
-        function displayMessageFromFirebase(message) {
+        function displayMessage(message) {
             const chatContainer = document.getElementById('chatMessages');
-            
-            // Evitar duplicados
-            const existingMessages = chatContainer.querySelectorAll('.chat-message.user');
-            for (let msg of existingMessages) {
-                const msgContent = msg.querySelector('.message-content').textContent;
-                const msgAuthor = msg.querySelector('.message-author').textContent;
-                const msgTime = msg.querySelector('.message-time').textContent;
-                
-                if (msgContent === message.content && 
-                    msgAuthor === message.author && 
-                    msgTime === message.time) {
-                    return; // Ya existe
-                }
-            }
-            
             const messageDiv = document.createElement('div');
             messageDiv.className = 'chat-message user';
             
@@ -854,7 +777,7 @@
             chatContainer.appendChild(messageDiv);
 
             // Mantener máximo 50 mensajes visibles
-            if (chatContainer.children.length > 51) { // +1 por el mensaje del sistema
+            if (chatContainer.children.length > 51) {
                 const userMessages = chatContainer.querySelectorAll('.chat-message.user');
                 if (userMessages.length > 50) {
                     chatContainer.removeChild(userMessages[0]);
@@ -866,7 +789,7 @@
         }
 
         function filterBadWords(text) {
-            const badWords = ['puta', 'pendejo', 'marica', 'gonorrea']; // Agregar más si necesitas
+            const badWords = ['puta', 'pendejo', 'marica', 'gonorrea'];
             let filtered = text;
             badWords.forEach(word => {
                 const regex = new RegExp(word, 'gi');
@@ -889,121 +812,38 @@
                     sendMessage();
                 }
             });
-
-            // Inicializar chat
-            setTimeout(initializeChat, 1000);
         });
 
-        // Funciones para información del DJ
-        function updateDJInfo() {
-            const djName = document.getElementById('djNameInput').value;
-            const djAvatar = document.getElementById('djAvatarInput').value;
-
-            if (djName) {
-                document.getElementById('djName').textContent = djName;
-                document.getElementById('djNameInput').value = '';
-            }
-
-            if (djAvatar) {
-                document.getElementById('djAvatar').src = djAvatar;
-                document.getElementById('djAvatarInput').value = '';
-            }
-
-            // Animación de confirmación
-            const djSection = document.querySelector('.dj-section');
-            djSection.style.transform = 'scale(1.02)';
-            setTimeout(() => {
-                djSection.style.transform = 'scale(1)';
-            }, 200);
-        }
-
         // Funciones para stream en vivo
         function playLiveStream() {
-            const audioElement = document.getElementById('lfmPlayer');
-            if (!audioElement) return;
-            audioElement.play().then(() => {
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(err => {
-                console.error('Error al reproducir:', err);
-                alert('No se pudo reproducir el stream');
-            });
-        }
-
-            stopLocalPlayback();
-
-            if (liveAudio) {
-                liveAudio.pause();
+            const audioElement = document.querySelector('audio');
+            if (audioElement) {
+                audioElement.play().then(() => {
+                    document.getElementById('liveEqualizer').style.display = 'flex';
+                }).catch(err => {
+                    console.error('Error al reproducir:', err);
+                });
             }
-
-            liveAudio = new Audio(streamUrl);
-            liveAudio.volume = document.getElementById('liveVolume').value / 100;
-            
-            liveAudio.play().then(() => {
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(error => {
-                alert('Error al reproducir el stream. Verifica la URL.');
-                console.error('Error:', error);
-            });
         }
 
         function stopLiveStream() {
-            const audioElement = document.getElementById('lfmPlayer');
-            if (!audioElement) return;
-            audioElement.pause();
-            document.getElementById('liveEqualizer').style.display = 'none';
-        }
-        }
-
-        function setLiveVolume(value) {
-            if (liveAudio) {
-                liveAudio.volume = value / 100;
-            }
-        }
-
-        // Funciones para stream en vivo
-        function playLiveStream() {
-            const streamUrl = document.getElementById('streamUrl').value;
-            if (!streamUrl) {
-                alert('Por favor ingresa una URL de stream válida');
-                return;
-            }
-
-            if (liveAudio) {
-                liveAudio.pause();
-            }
-
-            liveAudio = new Audio(streamUrl);
-            liveAudio.volume = document.getElementById('liveVolume').value / 100;
-            
-            liveAudio.play().then(() => {
-                document.getElementById('currentTrackDisplay').textContent = '🔴 Transmisión en Vivo';
-                document.getElementById('liveEqualizer').style.display = 'flex';
-            }).catch(error => {
-                alert('Error al reproducir el stream. Verifica la URL.');
-                console.error('Error:', error);
-            });
-        }
-
-        function stopLiveStream() {
-            if (liveAudio) {
-                liveAudio.pause();
-                liveAudio = null;
+            const audioElement = document.querySelector('audio');
+            if (audioElement) {
+                audioElement.pause();
                 document.getElementById('liveEqualizer').style.display = 'none';
-                document.getElementById('currentTrackDisplay').textContent = 'Stream detenido';
             }
         }
 
         function setLiveVolume(value) {
-            if (liveAudio) {
-                liveAudio.volume = value / 100;
+            const audioElement = document.querySelector('audio');
+            if (audioElement) {
+                audioElement.volume = value / 100;
             }
         }
 
         // Inicialización
         window.addEventListener('load', () => {
             console.log('LFM Radio cargada correctamente');
-            
-            // Precargar la URL de LFM Radio
             
             // Mensaje de bienvenida con instrucciones
             setTimeout(() => {
@@ -1012,64 +852,68 @@
                     content: '🎵 ¡Bienvenidos al chat de LFM Radio! Pidan sus canciones favoritas y compartan con otros oyentes. ¡La música nos une! 📻',
                     time: new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'})
                 };
-                displayMessageFromFirebase(welcomeMsg);
+                displayMessage(welcomeMsg);
             }, 2000);
         });
     </script>
 
-<!-- Firebase Chat (IDs adaptados a tu HTML) -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    <!-- Firebase Chat Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// Config Firebase (tuya)
-const firebaseConfig = {
-  apiKey: "AIzaSyDHxvxILBO9zY42EcIDcBSTTTGkGXqK61k",
-  authDomain: "lfm-radio-750cb.firebaseapp.com",
-  databaseURL: "https://lfm-radio-750cb-default-rtdb.firebaseio.com/",
-  projectId: "lfm-radio-750cb",
-  storageBucket: "lfm-radio-750cb.firebasestorage.app",
-  messagingSenderId: "476508090552",
-  appId: "1:476508090552:web:c5b343123ea472fcdf444d",
-  measurementId: "G-XM288R8CDD"
-};
+        // Config Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHxvxILBO9zY42EcIDcBSTTTGkGXqK61k",
+            authDomain: "lfm-radio-750cb.firebaseapp.com",
+            databaseURL: "https://lfm-radio-750cb-default-rtdb.firebaseio.com/",
+            projectId: "lfm-radio-750cb",
+            storageBucket: "lfm-radio-750cb.firebasestorage.app",
+            messagingSenderId: "476508090552",
+            appId: "1:476508090552:web:c5b343123ea472fcdf444d",
+            measurementId: "G-XM288R8CDD"
+        };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-// Elementos del DOM según tu HTML
-const elMessages = document.getElementById("chatMessages");
-const elInput = document.getElementById("chatInput");
-const elName = document.getElementById("userName");
+        // Elementos del DOM
+        const elMessages = document.getElementById("chatMessages");
+        const elInput = document.getElementById("chatInput");
+        const elName = document.getElementById("userName");
 
-// Referencia del chat global
-const chatRef = ref(db, "mensajes");
+        // Referencia del chat global
+        const chatRef = ref(db, "mensajes");
 
-// Pintar un mensaje
-function appendMessage(usuario, texto, timestamp){
-  const cont = document.createElement("div");
-  cont.className = "chat-message";
-  const time = new Date(timestamp || Date.now()).toLocaleTimeString();
-  cont.innerHTML = `<span class="message-user">[${time}] ${usuario}:</span> <span class="message-content">${texto}</span>`;
-  elMessages.appendChild(cont);
-  elMessages.scrollTop = elMessages.scrollHeight;
-}
+        // Pintar un mensaje de Firebase
+        function appendFirebaseMessage(usuario, texto, timestamp) {
+            const cont = document.createElement("div");
+            cont.className = "chat-message user";
+            const time = new Date(timestamp || Date.now()).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+            cont.innerHTML = `
+                <span class="message-user">[${time}] ${usuario}:</span> 
+                <span class="message-content">${texto}</span>
+            `;
+            elMessages.appendChild(cont);
+            elMessages.scrollTop = elMessages.scrollHeight;
+        }
 
-// Escuchar nuevos mensajes en tiempo real
-onChildAdded(chatRef, (snap) => {
-  const data = snap.val();
-  appendMessage(data.usuario || "Anónimo", data.texto || "", data.timestamp);
-});
+        // Escuchar nuevos mensajes en tiempo real
+        onChildAdded(chatRef, (snap) => {
+            const data = snap.val();
+            appendFirebaseMessage(data.usuario || "Anónimo", data.texto || "", data.timestamp);
+        });
 
-// Enviar mensaje
-window.sendMessage = function () {
-  const usuario = (elName && elName.value.trim()) ? elName.value.trim() : "Anónimo";
-  const texto = elInput ? elInput.value.trim() : "";
-  if (!texto) return;
-  push(chatRef, { usuario, texto, timestamp: Date.now() });
-  elInput.value = "";
-};
-</script>
-
+        // Sobrescribir función sendMessage para integrar Firebase
+        window.sendMessage = function () {
+            const usuario = (elName && elName.value.trim()) ? elName.value.trim() : "Anónimo";
+            const texto = elInput ? elInput.value.trim() : "";
+            if (!texto) return;
+            
+            // Enviar a Firebase
+            push(chatRef, { usuario, texto, timestamp: Date.now() });
+            elInput.value = "";
+        };
+    </script>
 </body>
 </html>
