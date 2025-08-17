@@ -635,36 +635,38 @@
             <div class="player-section">
                 <h2 class="section-title">🔴 Transmisión en Vivo</h2>
                 <div class="live-player">
-    <input type="hidden" id="streamUrl" value="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849">
-    
-    <audio id="lfmPlayer" style="width:100%; margin-top:15px;">
-        <source src="https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849" type="audio/mpeg">
-        Tu navegador no soporta la reproducción de audio.
-    </audio>
 
-    <div style="margin-top: 15px;">
-        <button class="btn" onclick="playLiveStream()">▶ Reproducir</button>
-        <button class="btn btn-secondary" onclick="stopLiveStream()">⏸ Pausar</button>
-    </div>
-
-    <div class="live-status">
-        <div class="live-dot"></div>
-        EN VIVO
-    </div>
-    
-    <div class="volume-control">
-        <span>🔊</span>
-        <input type="range" class="volume-slider" id="liveVolume" min="0" max="100" value="50" onchange="setLiveVolume(this.value)">
-    </div>
-    <div class="equalizer" id="liveEqualizer" style="display: none;">
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-        <div class="eq-bar"></div>
-    </div>
+<div data-type="newStreamPlayer" 
+     data-publicToken="c4f3db49-2a69-4570-9e6a-2f5f6eb49296" 
+     data-theme="light" 
+     data-color="e81e4d" 
+     data-channelId="9fa20f89-a0a4-4bac-b0f8-85a268742434" 
+     data-rendered="false" 
+     class="cstrEmbed">
+  <a href="https://www.caster.fm">Shoutcast Hosting</a>
+  <a href="https://www.caster.fm">Stream Hosting</a>
+  <a href="https://www.caster.fm">Radio Server Hosting</a>
 </div>
+<script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
+
+
+                    <div class="live-status">
+                        <div class="live-dot"></div>
+                        EN VIVO
+                    </div>
+                    
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <input type="range" class="volume-slider" id="liveVolume" min="0" max="100" value="50" onchange="setLiveVolume(this.value)">
+                    </div>
+                    <div class="equalizer" id="liveEqualizer" style="display: none;">
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                    </div>
                 </div>
             </div>
 
@@ -738,17 +740,22 @@
         // Función para reproducir LFM Radio directamente
         function playLFMRadio() {
             // Poner la URL de LFM Radio en el campo
-            document.getElementById('streamUrl').value = 'https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849';
             
             // Reproducir automáticamente
             playLiveStream();
         }
 
         // Función para abrir WhatsApp con dedicatoria
-        function openWhatsAppDedication() {
-            const phoneNumber = "573218384587"; // Número con código de país de Colombia
-            const message = "¡Hola! Me gustaría dedicar una canción en la radio 🎵";
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        
+    // Función para abrir WhatsApp directo sin mensaje
+    function openWhatsAppDedication() {
+        const phoneNumber = "573218384587"; // Número con código de país
+        const whatsappUrl = `https://wa.me/${phoneNumber}`;
+        
+        // Abrir en nueva pestaña
+        window.open(whatsappUrl, '_blank');
+    }
+?text=${encodeURIComponent(message)}`;
             
             // Abrir en nueva pestaña
             window.open(whatsappUrl, '_blank');
@@ -911,7 +918,40 @@
         }
 
         // Funciones para stream en vivo
-        
+        function playLiveStream() {
+            const audioElement = document.getElementById('lfmPlayer');
+            if (!audioElement) return;
+            audioElement.play().then(() => {
+                document.getElementById('liveEqualizer').style.display = 'flex';
+            }).catch(err => {
+                console.error('Error al reproducir:', err);
+                alert('No se pudo reproducir el stream');
+            });
+        }
+
+            stopLocalPlayback();
+
+            if (liveAudio) {
+                liveAudio.pause();
+            }
+
+            liveAudio = new Audio(streamUrl);
+            liveAudio.volume = document.getElementById('liveVolume').value / 100;
+            
+            liveAudio.play().then(() => {
+                document.getElementById('liveEqualizer').style.display = 'flex';
+            }).catch(error => {
+                alert('Error al reproducir el stream. Verifica la URL.');
+                console.error('Error:', error);
+            });
+        }
+
+        function stopLiveStream() {
+            const audioElement = document.getElementById('lfmPlayer');
+            if (!audioElement) return;
+            audioElement.pause();
+            document.getElementById('liveEqualizer').style.display = 'none';
+        }
         }
 
         function setLiveVolume(value) {
@@ -921,7 +961,36 @@
         }
 
         // Funciones para stream en vivo
-        
+        function playLiveStream() {
+            const streamUrl = document.getElementById('streamUrl').value;
+            if (!streamUrl) {
+                alert('Por favor ingresa una URL de stream válida');
+                return;
+            }
+
+            if (liveAudio) {
+                liveAudio.pause();
+            }
+
+            liveAudio = new Audio(streamUrl);
+            liveAudio.volume = document.getElementById('liveVolume').value / 100;
+            
+            liveAudio.play().then(() => {
+                document.getElementById('currentTrackDisplay').textContent = '🔴 Transmisión en Vivo';
+                document.getElementById('liveEqualizer').style.display = 'flex';
+            }).catch(error => {
+                alert('Error al reproducir el stream. Verifica la URL.');
+                console.error('Error:', error);
+            });
+        }
+
+        function stopLiveStream() {
+            if (liveAudio) {
+                liveAudio.pause();
+                liveAudio = null;
+                document.getElementById('liveEqualizer').style.display = 'none';
+                document.getElementById('currentTrackDisplay').textContent = 'Stream detenido';
+            }
         }
 
         function setLiveVolume(value) {
@@ -935,7 +1004,6 @@
             console.log('LFM Radio cargada correctamente');
             
             // Precargar la URL de LFM Radio
-            document.getElementById('streamUrl').value = 'https://uk6freenew.listen2myradio.com/live.mp3?typeportmount=s1_8571_stream_296700849';
             
             // Mensaje de bienvenida con instrucciones
             setTimeout(() => {
@@ -1001,34 +1069,6 @@ window.sendMessage = function () {
   push(chatRef, { usuario, texto, timestamp: Date.now() });
   elInput.value = "";
 };
-</script>
-
-
-<script>
-    const audioElement = document.getElementById('lfmPlayer');
-    const equalizer = document.getElementById('liveEqualizer');
-
-    function playLiveStream() {
-        const streamUrl = document.getElementById('streamUrl').value;
-        audioElement.src = streamUrl;
-        audioElement.play()
-            .then(() => {
-                equalizer.style.display = 'flex';
-            })
-            .catch(err => {
-                console.error('Error al reproducir:', err);
-                alert('Debes dar clic para permitir la reproducción.');
-            });
-    }
-
-    function stopLiveStream() {
-        audioElement.pause();
-        equalizer.style.display = 'none';
-    }
-
-    function setLiveVolume(value) {
-        audioElement.volume = value / 100;
-    }
 </script>
 
 </body>
